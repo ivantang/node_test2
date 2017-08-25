@@ -4,14 +4,17 @@ var userListData = [];
 // DOM Ready =============================================================
 $(document).ready(function() {
 
+    // Populate the user table on initial page load
+    populateTable();
+
     //user name click
     $('#userList table tbody').on('click', 'td a.linkshowuser', showUserInfo);
 
     //add user button click
     $('#btnAddUser').on('click', addUser);
 
-    // Populate the user table on initial page load
-    populateTable();
+    // delete user link click
+    $('#userList table tbody').on('click', 'td a.linkdeleteuser', deleteUser);
 
 });
 
@@ -26,20 +29,20 @@ function populateTable() {
     // jQuery AJAX call for JSON
     $.getJSON( '/users/userlist', function( data ) {
 
-    //stick our user data array into a suerlist variable in the global object
-    userListData = data;
+      //stick our user data array into a suerlist variable in the global object
+      userListData = data;
 
-        // For each item in our JSON, add a table row and cells to the content string
-        $.each(data, function(){
-            tableContent += '<tr>';
-            tableContent += '<td><a href="#" class="linkshowuser" rel="' + this.username + '">' + this.username + '</a></td>';
-            tableContent += '<td>' + this.email + '</td>';
-            tableContent += '<td><a href="#" class="linkdeleteuser" rel="' + this._id + '">delete</a></td>';
-            tableContent += '</tr>';
-        });
+      // For each item in our JSON, add a table row and cells to the content string
+      $.each(data, function() {
+          tableContent += '<tr>';
+          tableContent += '<td><a href="#" class="linkshowuser" rel="' + this.username + '">' + this.username + '</a></td>';
+          tableContent += '<td>' + this.email + '</td>';
+          tableContent += '<td><a href="#" class="linkdeleteuser" rel="' + this._id + '">delete</a></td>';
+          tableContent += '</tr>';
+      });
 
-        // Inject the whole content string into our existing HTML table
-        $('#userList table tbody').html(tableContent);
+      // Inject the whole content string into our existing HTML table
+      $('#userList table tbody').html(tableContent);
     });
 };
 
@@ -81,9 +84,9 @@ function addUser(event) {
     // if yes compile all user info into one object
     var newUser = {
       'username': $('#addUser fieldset input#inputUserName').val(),
-      'email': $('addUser fieldset input#inputUserEmail').val(),
-      'fullname': $('addUser fieldset input#inputUserFullname').val(),
-      'age': $('addUser fieldset input#inputUserAge').val(),
+      'email': $('#addUser fieldset input#inputUserEmail').val(),
+      'fullname': $('#addUser fieldset input#inputUserFullname').val(),
+      'age': $('#addUser fieldset input#inputUserAge').val(),
       'location': $('#addUser fieldset input#inputUserLocation').val(),
       'gender': $('#addUser fieldset input#inputUserGender').val()
     }
@@ -94,13 +97,60 @@ function addUser(event) {
       data: newUser,
       url: '/users/adduser',
       dataType: 'JSON'
-    }).done(function( response) {
+    }).done(function( response ) {
       // check for successful (blank) response
       if (response.msg === '') {
+
         // clear form inputUserAge
-        $('addUser fieldset input').val('')
+        $('#addUser fieldset input').val('');
+
+        //update the table
+        populateTable();
+
       }
-    })
+      else {
+        //if something goes wrong, alert error message
+        alert('Error: ' + response.msg);
+      }
+    });
+  }
+  else {
+    //if errorCount is more than 0, error out
+    alert('Please fill in all fields');
+    return false;
   }
 
-}
+};
+
+// delete user
+function deleteUser(event) {
+  event.preventDefault();
+
+  //pop up a confirmation dialog
+  var confirmation = confirm('Are you sure you want to delete this user?');
+
+  //check and make sure the user confirmed
+  if (confirmation === true) {
+
+    //if they did, delete
+    $.ajax({
+      type; 'DELETE',
+      url: '/users/deleteuser/' + $(this).attr('rel')
+    }).done(function( response) {
+
+      //check for successful (blank) response
+      if (response.msg === '') {
+      }
+      else {
+        alert('Error: ' + response.msg);
+      }
+
+      //update table
+      populateTable();
+    });
+  }
+  else {
+    //if they said no to confirm, do nothing
+    return false;
+  }
+};

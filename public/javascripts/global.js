@@ -4,9 +4,6 @@ var userListData = [];
 // DOM Ready =============================================================
 $(document).ready(function() {
 
-    // Populate the user table on initial page load
-    populateTable();
-
     //user name click
     $('#userList table tbody').on('click', 'td a.linkshowuser', showUserInfo);
 
@@ -15,6 +12,9 @@ $(document).ready(function() {
 
     // delete user link click
     $('#userList table tbody').on('click', 'td a.linkdeleteuser', deleteUser);
+
+    // Populate the user table on initial page load
+    populateTable();
 
 });
 
